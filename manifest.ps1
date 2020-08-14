@@ -1,63 +1,83 @@
-$main_path = '\\vmncusproshipp2.quietlogistics.com\c$\Program Files (x86)\ProShip\Server\alfred_data'
+# Write-Output
 
-$r_host = '\\vmncusproshipp2.quietlogistics.com'
-$comp_name = 'vmncusproshipp2.quietlogistics.com'
-
-$cred = Get-Credential "quietlogistics.com\abrailko"
 
 #$sysinfo = Get-WmiObject -Class Win32_ComputerSystem
 #$sysinfo.Domain
 
+$comp_name = 'vmncusproshipp2.quietlogistics.com'
 function Get-Manifest {
 
   $inner_path = 'c:\Program Files (x86)\ProShip\Server\alfred_data'
 
   $outbox = Get-ChildItem $inner_path -recurse | Where-Object {$_.PSIsContainer -eq $true -and $_.Name -match "outbox"}
-  # write-host get-location $outbox
-  # $outbox | foreach{ Convert-Path $_.PSPath} | `
-  #
-  # %{ if((Test-path -Path (Join-Path -Path $_ -ChildPath '\*')) -eq $true){Invoke-item $_  } else {write-host 'Empty'}}
 
   foreach($path in $outbox)
   {
     $each_path = Convert-Path $path.PSPath
     if((Test-path -Path (Join-Path -Path $each_path -ChildPath '\*')) -eq $true)
     {
-      write-host $path.Parent.Parent'\'$path.Parent - 'contains some files'.ToUpper()
+      $p =  -join($inner_path.ToString(), '\', $path.Parent.Parent.ToString(), '\', $path.Parent.ToString(), '\', $path.ToString())
+      # get-ChildItem $p | Format-list -Property Name,CreationTime,Directory
+      # $date | get-member
+      # $csv
+
+      $row = get-ChildItem $p | Select-Object -Property Name,CreationTime,Directory | Format-list
+      $row
+      # $output_array.Add($row)
+      # $output_array | get-member
+
+
+      # $inner_path | get-member
+      # $path.Parent.Parent | get-member
+      # $path.Parent.Parent.ToString()
+
+      # $path | get-member
+      # @($path.Parent.Parent, $path.Parent, $path) | %{$c_path = Join-Path $inner_path (Convert-Path  $_)}
+      # $c_path
+      # Get-ChildItem -Path $c_path
+      # Get-ChildItem -ComputerName $comp_name -Path (Join-Path -Path $path -ChildPath '\*') | format-table -autosize -property name
+      # Invoke-Command -ComputerName $comp_name -Credential $prm.Cred -ScriptBlock ${Get-ChildItem -Path (Join-Path -Path $path -ChildPath '\*')}  | format-table -autosize -property name
+      # write-Output $path
+      # write-host $path.Parent.Parent'\'$path.Parent - 'contains some files'.ToUpper()
     } else {
-      write-host $path.Parent - 'empty'
+      # write-host $path.Parent - 'empty'
     }
   }
-  # $outbox |
-  # foreach($Directory in $outbox) {Write-Host $Directory}
-  # $location = @('pss_dhlamp', 'pss_dhlgmi')
-  # foreach($item in $location)
-  # {
-  #   Write-host 'HERE'
-  #   $full_path = -join($inner_path, '\' , $item)
-  #   $full_path
-  #   # $children = Get-ChildItem $full_path -Directory
-  #   foreach($folder in $full_path){
-  #       Test-Path -Path
-  #   }
-    # $outbox = Get-ChildItem $full_path -Directory -Recurse | where {$_.PSIsContainer -eq $true -and $_.Name -match 'outbox'} |  `
-
-    # %{ Write-host ($_ | Measure-Object).Count}
-
-    # %{if ( ($_ | Measure-Object).Count -eq 0) {Write-Host $_.Parent - 'Empty'} else {Write-Host $_.Parent 'File in here'}}
+  # $date = Get-Date -Format "MM-dd-yyyy_HH_mm"
+  # $csv = -join((Convert-Path ~), '\Documents', '\', "ProShip_$date.csv" )
+  # $output_array | Export-CSV -Path $csv
+}
 
 
-    # if(($outbox | foreach {$_ | Measure-Object).Count} -lt 0 ){
-    #   $outbox | foreach { Write-Host $_.Parent - 'contains some files'}
-    # } else {
-    #   $outbox | foreach { Write-Host $_.Parent - 'is empty'}
-    #
-    # }
-
-  # }
-    }
-    # Write-Host $session
-    # Invoke-Command -Session $session -ScriptBlock ${function:Get-Manifest}
-    Invoke-Command -ComputerName $comp_name -Credential $cred -ScriptBlock ${function:Get-Manifest}
-
-    # Remove-PSSession $session
+# function Show-Menu {
+#   param (
+#     [string]$option = ''
+#   )
+#   Clear-Host
+#   Write-Output 'Welcome to Manifest script'
+#   Write-Output 'Please choose options from menu down below'
+#
+#   sleep 3
+#   cls
+#   Write-Host "1: Press '1' to check folders pss_dhlamp and pss_dhlgmi."
+#   Write-Host '2: Press Q to exit this menu'
+# }
+#
+# do{
+#   Show-Menu
+#   $selection = Read-Host 'Please make a selection'
+#   switch ($selection)
+#   {
+#     "1" {
+#       Write-Host 'Enter your username and login'
+      $cred = Get-Credential 'quietlogistics.com\'
+      # Invoke-Command -ComputerName $comp_name -Credential $cred -ScriptBlock ${function:Get-Manifest}
+      Invoke-Command -ComputerName $comp_name -Credential $cred -ScriptBlock ${function:Get-Manifest}
+#     }
+#     "q"{
+#       exit
+#     }
+#   }
+#   pause
+# }
+# until($selection -eq 'q')
