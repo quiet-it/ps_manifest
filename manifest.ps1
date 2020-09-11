@@ -1,15 +1,17 @@
-# Write-Output
 
 
-#$sysinfo = Get-WmiObject -Class Win32_ComputerSystem
-#$sysinfo.Domain
 
-$comp_name = 'vmncusproshipp2.quietlogistics.com'
+
 function Get-Manifest {
 
+  param ($date_range, $color)  
+
+  
   $inner_path = 'c:\Program Files (x86)\ProShip\Server\alfred_data'
 
-  $outbox = Get-ChildItem $inner_path -recurse | Where-Object {$_.PSIsContainer -eq $true -and $_.Name -match "outbox"}
+  
+
+  $outbox = Get-ChildItem 'c:\Program Files (x86)\ProShip\Server\alfred_data' -Recurse | Where-Object {$_.PSIsContainer -eq $true -and $_.Name -match "outbox"}
 
   foreach($path in $outbox)
   {
@@ -17,67 +19,35 @@ function Get-Manifest {
     if((Test-path -Path (Join-Path -Path $each_path -ChildPath '\*')) -eq $true)
     {
       $p =  -join($inner_path.ToString(), '\', $path.Parent.Parent.ToString(), '\', $path.Parent.ToString(), '\', $path.ToString())
-      # get-ChildItem $p | Format-list -Property Name,CreationTime,Directory
-      # $date | get-member
-      # $csv
+     
+      $day = (get-date).AddDays(-($date_range)).Date
+           
 
-      $row = get-ChildItem $p | Select-Object -Property Name,CreationTime,Directory | Format-list
-      $row
-      # $output_array.Add($row)
-      # $output_array | get-member
+      $get_all_objects = get-ChildItem $p 
 
-
-      # $inner_path | get-member
-      # $path.Parent.Parent | get-member
-      # $path.Parent.Parent.ToString()
-
-      # $path | get-member
-      # @($path.Parent.Parent, $path.Parent, $path) | %{$c_path = Join-Path $inner_path (Convert-Path  $_)}
-      # $c_path
-      # Get-ChildItem -Path $c_path
-      # Get-ChildItem -ComputerName $comp_name -Path (Join-Path -Path $path -ChildPath '\*') | format-table -autosize -property name
-      # Invoke-Command -ComputerName $comp_name -Credential $prm.Cred -ScriptBlock ${Get-ChildItem -Path (Join-Path -Path $path -ChildPath '\*')}  | format-table -autosize -property name
-      # write-Output $path
-      # write-host $path.Parent.Parent'\'$path.Parent - 'contains some files'.ToUpper()
-    } else {
-      # write-host $path.Parent - 'empty'
-    }
+     
+      $day_files = $get_child | Where-Object {$_.CreationTime.Date -gt $day}
+               
+      Write-Host $day_files -BackgroundColor $color  
+    } 
   }
-  # $date = Get-Date -Format "MM-dd-yyyy_HH_mm"
-  # $csv = -join((Convert-Path ~), '\Documents', '\', "ProShip_$date.csv" )
-  # $output_array | Export-CSV -Path $csv
 }
 
+Write-Host $3day_files
 
-# function Show-Menu {
-#   param (
-#     [string]$option = ''
-#   )
-#   Clear-Host
-#   Write-Output 'Welcome to Manifest script'
-#   Write-Output 'Please choose options from menu down below'
-#
-#   sleep 3
-#   cls
-#   Write-Host "1: Press '1' to check folders pss_dhlamp and pss_dhlgmi."
-#   Write-Host '2: Press Q to exit this menu'
-# }
-#
-# do{
-#   Show-Menu
-#   $selection = Read-Host 'Please make a selection'
-#   switch ($selection)
-#   {
-#     "1" {
-#       Write-Host 'Enter your username and login'
-      $cred = Get-Credential 'quietlogistics.com\'
-      # Invoke-Command -ComputerName $comp_name -Credential $cred -ScriptBlock ${function:Get-Manifest}
-      Invoke-Command -ComputerName $comp_name -Credential $cred -ScriptBlock ${function:Get-Manifest}
-#     }
-#     "q"{
-#       exit
-#     }
-#   }
-#   pause
-# }
-# until($selection -eq 'q')
+$cred = Get-Credential 'quietlogistics.com\abrailko'
+# Invoke-Command -ComputerName $comp_name -Credential $cred -ScriptBlock ${function:Get-Manifest}
+
+$commands = @(
+    Get-Manifest 1 green,
+    Get-Manifest 2 yellow,
+    Get-Manifest 5 red
+)
+$comp_name = 'vmncusproshipp2.quietlogistics.com'
+foreach ($each_command in $commands){
+    $comp_name
+    Invoke-Command $each_command -ComputerName 'vmncusproshipp2.quietlogistics.com' -Credential $cred 
+}
+#Invoke-Command -ComputerName $comp_name -Credential $cred -ScriptBlock ${function:Get-Manifest 1 green}
+#Invoke-Command -ComputerName $comp_name -Credential $cred -ScriptBlock ${function:Get-Manifest 2 yellow}
+#Invoke-Command -me $comp_name -Credential $cred -ScriptBlock ${function:Get-Manifest 6 red}
